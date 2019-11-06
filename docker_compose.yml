@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+
+  task_generator:
+    build: ./message_producer
+    environment:
+      KAFKA_BROKER_URL: broker:9092
+      TASKS_TOPIC: tracking.tasks
+      TASKS_PER_SECOND: 1000
+
+  task_receiver:
+    build: ./message_consumer
+    environment:
+      KAFKA_BROKER_URL: broker:9092
+      DONE_TASKS_TOPIC: tracking.done_tasks
+      DONE_TASKS_PER_SECOND: 1000
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
